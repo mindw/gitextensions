@@ -1471,7 +1471,16 @@ namespace GitUI
                             if (superprojectRef != null)
                                 superprojectRefs.Remove(superprojectRef);
 
-                            offset = DrawRef(drawRefArgs, offset, gitRef.Name, headColor, arrowType, superprojectRef != null, true);
+                            string name = gitRef.Name;
+                            if ( gitRef.IsTag
+                                 && gitRef.IsDereference // see note on using IsDereference in CommitInfo class.
+                                 && AppSettings.ShowAnnotatedTagsMessages
+                                 && AppSettings.ShowIndicatorForMultilineMessage )
+                            {
+                                name = name + "  " + MultilineMessageIndicator;
+                            }
+
+                            offset = DrawRef(drawRefArgs, offset, name, headColor, arrowType, superprojectRef != null, true);
                         }
                     }
 
@@ -1628,6 +1637,8 @@ namespace GitUI
             return offset;
         }
 
+        private static readonly string MultilineMessageIndicator = "[...]";
+
         private void RevisionsCellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             var columnIndex = e.ColumnIndex;
@@ -1686,7 +1697,7 @@ namespace GitUI
 
                 if (revision.Body != null)
                 {
-                    e.Value = revision.Body.TrimEnd().Contains("\n") ? "[...]" : "";
+                    e.Value = revision.Body.TrimEnd().Contains("\n") ? MultilineMessageIndicator : "";
                 }
                 else
                 {
